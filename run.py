@@ -1,5 +1,6 @@
 import gspread
 from google.oauth2.service_account import Credentials
+from pprint import pprint
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -11,6 +12,7 @@ CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('love_sandwiches')
+
 
 def get_sales_data():
     """
@@ -24,15 +26,16 @@ def get_sales_data():
         print(f"The data provided is {data_str}")
 
         sales_data = data_str.split(",")
-        
+
         if validate_data(sales_data):
             print("Data is vaild!")
             break
-    return sales_data    
+    return sales_data
+
 
 def validate_data(values):
-    """ 
-    Inside the try, converst all string values into integers. 
+    """
+    Inside the try, converst all string values into integers.
     Raises ValueError if strings cannot be converted to int,
     or if ther are not 6 values exactly
     """
@@ -41,14 +44,45 @@ def validate_data(values):
         [int(value) for value in values]
         if len(values) != 6:
             raise ValueError(
-        f"Exactly 6 values required, you provided {len(values)}"
-        )  
+                f"Exactly 6 values required, you provided {len(values)}"
+                )
     except ValueError as e:
-        print(f"Invalid data: {e}, please try again.\n")  
+        print(f"Invalid data: {e}, please try again.\n")
         return False
 
-    return True      
+    return True
 
 
-data = get_sales_data()
+def update_sales_worksheet(data):
+    """
+    Update sales worksheet, add new row with the list data provided.
+    """
+    print("Updating sales worksheet...")
+    sales_worksheet = SHEET.worksheet("sales")
+    sales_worksheet.append_row(data)
+    print("Sales worksheet updated successfully.\n")
 
+
+def calculate_suplus_data(sales_row):
+    """
+    Works out howmany sadwiches are left at the end of the day.
+    positive numbers inicate wastage.
+    negative numbers indicate extra sanwiches made to order. 
+    """
+    print("Updating surplus figures...")
+    stock = SHEET.worksheet("stock").get_all_values()
+    stock_row = stock[-1]
+    print(stock_row)
+
+
+def main():
+    """
+    Run all program functions
+    """
+    data = get_sales_data()
+    sales_data = [int(num) for num in data]
+    update_sales_worksheet(sales_data)
+    calculate_suplus_data(sales_data)
+
+print("Welcome to love sandwiches data automation")
+main()
