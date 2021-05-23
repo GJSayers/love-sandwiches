@@ -67,7 +67,7 @@ def calculate_surplus_data(sales_row):
     """
     Works out howmany sadwiches are left at the end of the day.
     positive numbers inicate wastage.
-    negative numbers indicate extra sanwiches made to order. 
+    negative numbers indicate extra sanwiches made to order.
     """
     print("Updating surplus figures...")
     stock = SHEET.worksheet("stock").get_all_values()
@@ -77,10 +77,18 @@ def calculate_surplus_data(sales_row):
     for stock, sales in zip(stock_row, sales_row):
         surplus = int(stock) - sales
         surplus_data.append(surplus)
+        
+    return surplus_data
     
 
-    return surplus_data  
-
+def update_surplus_worksheet(surplus_data):
+    """
+    Update surplus worksheet, add new row with the list data provided.
+    """
+    print("Updating surplus worksheet...")
+    surplus_worksheet = SHEET.worksheet("surplus")
+    surplus_worksheet.append_row(surplus_data)
+    print("Surplus worksheet updated successfully.\n")
 
 
 def main():
@@ -92,6 +100,8 @@ def main():
     update_sales_worksheet(sales_data)
     new_surplus_data = calculate_surplus_data(sales_data)
     print(new_surplus_data)
+    surplus_data = [int(num) for num in new_surplus_data]
+    update_surplus_worksheet(surplus_data)
 
 print("Welcome to love sandwiches data automation")
 main()
